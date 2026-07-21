@@ -1,59 +1,57 @@
-# StageApp
+# Supervision Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
+Dashboard web développé avec **Angular** pour la supervision en temps réel d'infrastructures virtualisées **Proxmox VE** et **VMware ESXi**.
 
-## Development server
+Interface connectée à l'[API backend Spring Boot](https://github.com/sofienecharaa-code/supervision-backend) associée à ce projet.
 
-To start a local development server, run:
+## Stack technique
+
+- **Angular 22** (Signals, syntaxe de contrôle de flux moderne `@if`/`@for`)
+- **Chart.js** / **ng2-charts** pour les graphiques
+- **jsPDF** / **html2canvas** pour l'export PDF
+- **RxJS** pour la gestion des flux de données temps réel
+
+## Fonctionnalités
+
+- Authentification (page de connexion, token JWT, guard de route)
+- Vue d'ensemble : liste des hosts (Proxmox et VMware) avec statut en temps réel
+- Graphiques CPU / RAM / Stockage par host (donut charts)
+- Historique des métriques dans le temps (courbes d'évolution)
+- Liste des VMs/containers par host, avec statut (actif/arrêté/erreur)
+- Actions Start/Stop directement depuis le dashboard
+- Recherche et tri des hosts
+- Panneau d'alertes RAM à 3 niveaux (sûr/moyen/élevé)
+- Export des données en CSV et PDF (avec graphiques intégrés)
+- Rafraîchissement automatique (polling configurable)
+- Design sur-mesure inspiré des salles de supervision (NOC)
+
+## Architecture
+src/app/
+├── components/
+│ ├── dashboard/ # Vue principale
+│ ├── login/ # Authentification
+│ ├── resource-chart/ # Graphiques donut CPU/RAM/Stockage
+│ └── history-chart/ # Graphiques d'historique
+├── services/ # Appels HTTP (hosts, VMs, historique, auth)
+├── guards/ # Protection des routes
+└── interceptors/ # Injection automatique du token JWT
+## Configuration
+
+L'URL de l'API backend est définie dans chaque service (`http://localhost:8080` par défaut) — à adapter si le backend tourne sur une autre machine.
+
+## Lancer le projet
 
 ```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+L'application démarre sur `http://localhost:4200`.
 
-## Code scaffolding
+## Projet associé
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Le backend Spring Boot correspondant : [supervision-backend](https://github.com/sofienecharaa-code/supervision-backend)
 
-```bash
-ng generate component component-name
-```
+## Contexte
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Projet réalisé dans le cadre d'un stage : supervision centralisée d'infrastructures virtualisées, avec connexion réelle et testée à des serveurs Proxmox VE et VMware ESXi.
