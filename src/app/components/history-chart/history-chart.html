@@ -1,0 +1,34 @@
+<div class="history-container">
+  @if (loading()) {
+    <p class="status-text">Chargement de l'historique...</p>
+  } @else if (!hasData()) {
+    <p class="status-text">Pas encore assez de données pour afficher un historique.</p>
+  } @else {
+    @if (latestEntry(); as latest) {
+      <div class="latest-summary">
+        <div class="latest-item">
+          <span class="dot dot-cpu"></span>
+          <span class="latest-label">CPU</span>
+          <span class="latest-value">{{ latest.cpuUsage }}%</span>
+        </div>
+        <div class="latest-item">
+          <span class="dot dot-ram"></span>
+          <span class="latest-label">RAM</span>
+          <span class="latest-value">{{ latest.ramUsage }}%</span>
+        </div>
+        <div class="latest-item">
+          <span class="dot dot-storage"></span>
+          <span class="latest-label">Stockage</span>
+          <span class="latest-value">{{ latest.storageUsage }}%</span>
+        </div>
+      </div>
+    }
+    <div class="chart-wrapper">
+      <canvas baseChart
+        [data]="chartData()"
+        [options]="chartOptions"
+        type="line">
+      </canvas>
+    </div>
+  }
+</div>

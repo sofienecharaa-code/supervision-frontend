@@ -1,0 +1,220 @@
+<div class="dashboard">
+  <header class="dashboard-header">
+    <div class="header-title">
+      <span class="header-icon">🖥️</span>
+      <div>
+        <h1>Supervision des infrastructures</h1>
+        <p class="subtitle">VMware &amp; Proxmox &mdash; vue temps réel</p>
+      </div>
+    </div>
+    <div class="summary-badges">
+      <span class="badge badge-online">{{ onlineCount() }} en ligne</span>
+      <span class="badge badge-offline">{{ offlineCount() }} hors ligne</span>
+      <button class="logout-btn" (click)="authService.logout()">Déconnexion</button>
+    </div>
+  </header>
+
+  @if (!loading() && !error()) {
+    <div class="global-summary">
+      <div class="summary-card">
+        <span class="summary-value">{{ totalHosts() }}</span>
+        <span class="summary-label">Hosts</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ totalVms() }}</span>
+        <span class="summary-label">VMs / Containers</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ totalRunningVms() }}</span>
+        <span class="summary-label">En cours d'exécution</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ avgCpuUsage() }}%</span>
+        <span class="summary-label">CPU moyen</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ avgRamUsage() }}%</span>
+        <span class="summary-label">RAM moyenne</span>
+      </div>
+    </div>
+  }
+
+  @if (ramStatuses().length > 0) {
+    <div class="status-banner">
+      <div class="status-header">
+        <strong>État de la RAM</strong>
+        <div class="status-counts">
+          <span class="count-pill count-high">{{ highCount() }} élevé</span>
+          <span class="count-pill count-medium">{{ mediumCount() }} moyen</span>
+          <span class="count-pill count-safe">{{ safeCount() }} sûr</span>
+        </div>
+      </div>
+      <div class="status-list">
+        @for (status of ramStatuses(); track status.source) {
+          <div class="status-item" [class.status-high]="status.severity === 'high'"
+                                     [class.status-medium]="status.severity === 'medium'"
+                                     [class.status-safe]="status.severity === 'safe'">
+            <span class="status-dot-item"></span>
+            <strong>{{ status.source }}</strong>
+            <span>RAM à {{ status.value }}%</span>
+            <span class="status-label">
+              @if (status.severity === 'high') {
+                Élevé
+              } @else if (status.severity === 'medium') {
+                Moyen
+              } @else {
+                Sûr
+              }
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="status-text">Chargement des données...</p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (!loading() && !error()) {
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Rechercher un host (nom, type, IP)..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+        />
+      </div>
+      <div class="sort-buttons">
+        <span class="sort-label">Trier par :</span>
+        <button class="sort-btn" [class.active]="sortField() === 'name'" (click)="setSortField('name')">
+          Nom @if (sortField() === 'name') { {{ sortAscending() ? '↑' : '↓' }} }
+        </button>
+        <button class="sort-btn" [class.active]="sortField() === 'cpu'" (click)="setSortField('cpu')">
+          CPU @if (sortField() === 'cpu') { {{ sortAscending() ? '↑' : '↓' }} }
+        </button>
+        <button class="sort-btn" [class.active]="sortField() === 'ram'" (click)="setSortField('ram')">
+          RAM @if (sortField() === 'ram') { {{ sortAscending() ? '↑' : '↓' }} }
+        </button>
+        <button class="sort-btn" [class.active]="sortField() === 'status'" (click)="setSortField('status')">
+          Statut @if (sortField() === 'status') { {{ sortAscending() ? '↑' : '↓' }} }
+        </button>
+      </div>
+      <div class="export-buttons">
+        <button class="export-btn" (click)="exportCsv()">⬇ CSV</button>
+        <button class="export-btn" (click)="exportPdf()" [disabled]="exportingPdf()">
+          @if (exportingPdf()) {
+            ⏳ Génération...
+          } @else {
+            ⬇ PDF
+          }
+        </button>
+      </div>
+    </div>
+
+    <div class="host-grid">
+      @for (host of filteredHosts(); track host.id) {
+        <div class="host-card" [class.online]="host.status === 'online'" [class.offline]="host.status !== 'online'">
+          <div class="card-top" (click)="toggleHost(host.id!)">
+            <div class="host-identity">
+              <span class="type-icon">{{ host.type === 'VMware' ? '🟦' : '🟧' }}</span>
+              <div>
+                <h3>{{ host.name }}</h3>
+                <span class="type-label">{{ host.type }}</span>
+              </div>
+            </div>
+            <span class="status-dot" [class.dot-online]="host.status === 'online'" [class.dot-offline]="host.status !== 'online'"></span>
+          </div>
+
+          <p class="ip-line">{{ host.ipAddress }}</p>
+
+          <div class="charts-row" [id]="'charts-' + host.id">
+            <app-resource-chart label="CPU" [value]="host.cpuUsage"></app-resource-chart>
+            <app-resource-chart label="RAM" [value]="host.ramUsage"></app-resource-chart>
+            <app-resource-chart label="Stockage" [value]="host.storageUsage"></app-resource-chart>
+          </div>
+
+          <button class="toggle-btn" (click)="toggleHost(host.id!)">
+            @if (expandedHostIds().has(host.id!)) {
+              Masquer les VMs ▲
+            } @else {
+              Voir les VMs ▼
+            }
+          </button>
+
+          <button class="toggle-btn" (click)="toggleHistory(host.id!)">
+            @if (expandedHistoryHostIds().has(host.id!)) {
+              Masquer l'historique ▲
+            } @else {
+              Voir l'historique 📈
+            }
+          </button>
+
+          @if (expandedHistoryHostIds().has(host.id!)) {
+            <div [id]="'history-' + host.id">
+              <app-history-chart [hostId]="host.id!"></app-history-chart>
+            </div>
+          }
+
+          @if (expandedHostIds().has(host.id!)) {
+            <div class="vm-list">
+              @if (vmsLoading() === host.id) {
+                <p class="status-text">Chargement des VMs...</p>
+              }
+
+              @for (vm of vmsByHost()[host.id!] ?? []; track vm.id) {
+                <div class="vm-item-wrapper">
+                  <div class="vm-item" [class]="'vm-' + vm.status">
+                    <span class="vm-dot" [class.vm-dot-running]="vm.status === 'running'"
+                                          [class.vm-dot-stopped]="vm.status === 'stopped'"
+                                          [class.vm-dot-error]="vm.status !== 'running' && vm.status !== 'stopped'"></span>
+                    <div class="vm-info">
+                      <strong>{{ vm.name }}</strong>
+                      <span class="vm-meta">{{ vm.type }} &middot; {{ vm.os }} &middot; {{ vm.vcpuCount }} vCPU &middot; {{ vm.ramAllocatedGb }} GB</span>
+                    </div>
+                    <span class="vm-cpu">{{ vm.cpuUsage }}% CPU</span>
+
+                    @if (vmActionInProgress() === vm.id) {
+                      <span class="vm-action-spinner">⏳</span>
+                    } @else {
+                      <div class="vm-actions">
+                        <button class="vm-action-btn vm-action-start"
+                                [disabled]="vm.status === 'running'"
+                                (click)="performVmAction(vm.id!, 'start')"
+                                title="Démarrer">▶</button>
+                        <button class="vm-action-btn vm-action-stop"
+                                [disabled]="vm.status === 'stopped'"
+                                (click)="performVmAction(vm.id!, 'stop')"
+                                title="Arrêter">■</button>
+                      </div>
+                    }
+                  </div>
+
+                  @if (vmActionMessage(); as msg) {
+                    @if (msg.vmId === vm.id) {
+                      <div class="vm-action-message" [class.success]="msg.success" [class.failure]="!msg.success">
+                        {{ msg.text }}
+                      </div>
+                    }
+                  }
+                </div>
+              } @empty {
+                @if (vmsLoading() !== host.id) {
+                  <p class="status-text">Aucune VM sur ce host.</p>
+                }
+              }
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="status-text">Aucun host ne correspond à votre recherche.</p>
+      }
+    </div>
+  }
+</div>

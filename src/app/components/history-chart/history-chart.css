@@ -1,0 +1,59 @@
+.history-container {
+  margin-top: 14px;
+  padding: 16px;
+  background: #0a0e14;
+  border: 1px solid #1c2430;
+  border-radius: 10px;
+}
+
+.latest-summary {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1c2430;
+}
+
+.latest-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-cpu { background: #4f8cff; }
+.dot-ram { background: #34e2b0; }
+.dot-storage { background: #f2a93c; }
+
+.latest-label {
+  color: #5d6b7d;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.latest-value {
+  color: #f4f7fb;
+  font-weight: 600;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 200px;
+  width: 100%;
+}
+
+.status-text {
+  color: #5d6b7d;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 20px 0;
+  font-family: 'Inter', sans-serif;
+}

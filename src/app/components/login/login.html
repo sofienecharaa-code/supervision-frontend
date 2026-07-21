@@ -1,0 +1,32 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="pulse-dot"></span>
+      <h1>Supervision Infra</h1>
+    </div>
+    <p class="login-subtitle">Connexion requise</p>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)" name="username" required autofocus />
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required />
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error-message">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="loading()">
+        @if (loading()) {
+          Connexion...
+        } @else {
+          Se connecter
+        }
+      </button>
+    </form>
+  </div>
+</div>
