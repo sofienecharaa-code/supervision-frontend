@@ -26,15 +26,16 @@ Interface connectée à l'[API backend Spring Boot](https://github.com/sofienech
 - Design sur-mesure inspiré des salles de supervision (NOC)
 
 ## Architecture
-src/app/
-├── components/
-│ ├── dashboard/ # Vue principale
-│ ├── login/ # Authentification
-│ ├── resource-chart/ # Graphiques donut CPU/RAM/Stockage
-│ └── history-chart/ # Graphiques d'historique
-├── services/ # Appels HTTP (hosts, VMs, historique, auth)
-├── guards/ # Protection des routes
-└── interceptors/ # Injection automatique du token JWT
+
+- `components/dashboard/` — Vue principale
+- `components/login/` — Authentification
+- `components/resource-chart/` — Graphiques donut CPU/RAM/Stockage
+- `components/history-chart/` — Graphiques d'historique
+- `services/` — Appels HTTP (hosts, VMs, historique, auth)
+- `guards/` — Protection des routes
+- `interceptors/` — Injection automatique du token JWT
+
+Tous ces dossiers se trouvent sous `src/app/`
 ## Configuration
 
 L'URL de l'API backend est définie dans chaque service (`http://localhost:8080` par défaut) — à adapter si le backend tourne sur une autre machine.
